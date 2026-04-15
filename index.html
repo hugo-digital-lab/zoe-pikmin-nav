@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>座標定位分析 V2.7</title>
+    <style>
+        :root { --main: #2d3436; --accent: #00b894; --bg: #f5f6fa; --card: #ffffff; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--main); padding: 20px; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 480px; flex-grow: 1; }
+        .card { background: var(--card); border-radius: 16px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h2 { margin-top: 0; color: var(--main); font-size: 1.4em; display: flex; align-items: center; gap: 8px; }
+        
+        .input-group { margin: 20px 0; }
+        input { width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: 10px; box-sizing: border-box; font-size: 14px; outline: none; transition: 0.2s; background: #fafafa; }
+        input:focus { border-color: var(--accent); background: white; }
+        button { width: 100%; background: var(--main); color: white; border: none; padding: 14px; border-radius: 10px; font-weight: bold; font-size: 16px; margin-top: 12px; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #1e272e; transform: translateY(-1px); }
+
+        .resultBox { display: none; margin-top: 24px; background: #f8f9fa; border-radius: 12px; padding: 16px; border: 1px solid #eee; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 0.95em; }
+        .info-row:last-child { border-bottom: none; }
+        .label { color: #636e72; }
+        .value { font-weight: 600; color: #2d3436; text-align: right; }
+        
+        .status-tag { padding: 4px 8px; border-radius: 6px; font-size: 0.85em; font-weight: bold; color: white; }
+        .bg-green { background: var(--accent); }
+        .bg-red { background: #d63031; }
+        .bg-orange { background: #e17055; }
+        
+        #loading { text-align: center; color: #636e72; font-size: 0.9em; display: none; margin-top: 15px; }
+        .map-btn { background: #4285F4; margin-top: 15px; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .map-btn:hover { background: #3367D6; }
+
+        /* 底部版權宣告樣式 */
+        .footer { margin-top: 30px; text-align: center; color: #b2bec3; font-size: 0.85em; letter-spacing: 0.5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h2>🛰️ 座標定位分析</h2> <div class="input-group">
+            <input type="text" id="coordInput" placeholder="整句貼上 (例: 大火菇 47.6938, 11.2197 剩2位)" autocomplete="off">
+            <button onclick="analyze()">開始分析</button>
+        </div>
+
+        <div id="loading">📡 自動淨化文字與連線中...</div>
+
+        <div id="resultBox" class="resultBox">
+            <div class="info-row"><span class="label">📍 所在地點</span><span class="value" id="loc">---</span></div>
+            <div class="info-row"><span class="label">⏰ 當地時間</span><span class="value" id="localTime" style="color: #0984e3; font-size: 1.1em;">---</span></div>
+            <div class="info-row"><span class="label">📅 當地日期</span><span class="value" id="localDate">---</span></div>
+            <div class="info-row"><span class="label">🕒 時差 (與台)</span><span class="value" id="timeDiff">---</span></div>
+            <div class="info-row"><span class="label">🍄 狀態判定</span><span id="resetStatus" class="status-tag bg-green">已換日</span></div>
+            <div class="info-row" style="margin-top: 5px;"><span class="label" style="color:#d63031; font-weight:bold;">⚠️ 安全建議</span><span id="cooldownWarning" class="status-tag bg-red">建議冷卻 2 小時</span></div>
+            <button id="gmapBtn" class="map-btn">🗺️ 開啟 Google Maps 雷達</button>
+        </div>
+    </div>
+    
+    <div class="footer">
+        v2.7.1 | Designed & Developed by <b>Hugo x Zoe AI</b>
+    </div>
+</div>
+
+<script>
+async function analyze() {
+    const rawInput = document.getElementById('coordInput').value;
+    const coordRegex = /(-?\d+\.\d+)\s*[,，]\s*(-?\d+\.\d+)/;
+    const match = rawInput.match(coordRegex);
+
+    if(!match) { alert("Zoe 找不到座標！請確保文字中包含類似「25.033, 121.564」的數字。"); return; }
+    const lat = parseFloat(match[1]); const lon = parseFloat(match[2]);
+    document.getElementById('coordInput').value = `${lat}, ${lon}`;
+    document.getElementById('resultBox').style.display = 'none';
+    document.getElementById('loading').style.display = 'block';
+
+    try {
+        const offset = Math.round(lon / 15);
+        const now = new Date();
+        const targetTime = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (offset * 3600000));
+        
+        document.getElementById('localTime').innerText = targetTime.toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
+        document.getElementById('localDate').innerText = targetTime.toLocaleDateString('zh-TW');
+        const diffFromTaiwan = offset - 8;
+        document.getElementById('timeDiff').innerText = `${diffFromTaiwan > 0 ? '+' : ''}${diffFromTaiwan} 小時`;
+
+        const hour = targetTime.getHours();
+        const resetTag = document.getElementById('resetStatus');
+        if (hour >= 0 && hour < 6) { resetTag.innerText = "✨ 剛換日 (黃金時段)"; resetTag.className = "status-tag bg-green"; } 
+        else if (hour >= 20) { resetTag.innerText = "🌙 即將換日"; resetTag.className = "status-tag bg-orange"; } 
+        else { resetTag.innerText = "☀️ 正常時段"; resetTag.className = "status-tag bg-green"; resetTag.style.background = "#00b894"; }
+
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&accept-language=zh-TW`);
+            const data = await res.json();
+            let locName = data.address.country || "未知地區";
+            if (data.address.city || data.address.town || data.address.state) locName += ` (${data.address.city || data.address.town || data.address.state})`;
+            document.getElementById('loc').innerText = locName;
+            
+            const isNearTaiwan = (lat > 20 && lat < 26 && lon > 118 && lon < 123);
+            const cooldownTag = document.getElementById('cooldownWarning');
+            if (isNearTaiwan) { cooldownTag.innerText = "依實際移動時間評估"; cooldownTag.className = "status-tag bg-orange"; } 
+            else { cooldownTag.innerText = "跨國飛行，務必冷卻 2 小時"; cooldownTag.className = "status-tag bg-red"; }
+        } catch (e) { document.getElementById('loc').innerText = "座標解析中"; }
+
+        document.getElementById('gmapBtn').onclick = () => window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lon}`, '_blank');
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('resultBox').style.display = 'block';
+    } catch (err) { alert("分析發生錯誤。"); document.getElementById('loading').style.display = 'none'; }
+}
+</script>
+</body>
+</html>
