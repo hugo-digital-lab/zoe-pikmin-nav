@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>座標定位分析 V2.7</title>
+    <title>Zoe 座標定位分析 V2.7.2</title>
     <style>
         :root { --main: #2d3436; --accent: #00b894; --bg: #f5f6fa; --card: #ffffff; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--main); padding: 20px; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
@@ -32,7 +32,6 @@
         .map-btn { background: #4285F4; margin-top: 15px; display: flex; justify-content: center; align-items: center; gap: 8px; }
         .map-btn:hover { background: #3367D6; }
 
-        /* 底部版權宣告樣式 */
         .footer { margin-top: 30px; text-align: center; color: #b2bec3; font-size: 0.85em; letter-spacing: 0.5px; }
     </style>
 </head>
@@ -40,7 +39,9 @@
 
 <div class="container">
     <div class="card">
-        <h2>🛰️ 座標定位分析</h2> <div class="input-group">
+        <h2>🛰️ 座標定位分析</h2>
+        
+        <div class="input-group">
             <input type="text" id="coordInput" placeholder="整句貼上 (例: 大火菇 47.6938, 11.2197 剩2位)" autocomplete="off">
             <button onclick="analyze()">開始分析</button>
         </div>
@@ -58,8 +59,23 @@
         </div>
     </div>
     
+    <details style="margin-top: 25px; background: #ffffff; border-radius: 12px; padding: 12px 16px; border: 1px solid #e0e0e0; cursor: pointer; outline: none; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+        <summary style="font-weight: 700; color: #2d3436; font-size: 0.95em; list-style-position: inside;">💡 Zoe 飛人安全生存守則 (點擊展開)</summary>
+        <div style="margin-top: 12px; font-size: 0.85em; color: #636e72; line-height: 1.6; border-top: 1px dashed #ccc; padding-top: 12px;">
+            <p style="margin: 0 0 8px 0;"><b style="color: #00b894;">🌸 採集模式 (無痕低風險)：</b><br>若單純拿花瓣、撿果實。不涉及伺服器互動，系統無嚴格紀錄，可自由飛行。</p>
+            <p style="margin: 0 0 8px 0;"><b style="color: #d63031;">🍄 打菇模式 (強紀錄高風險)：</b><br>「進入蘑菇挑戰」或「領取獎勵」會立刻寫入座標紀錄。不合理的時空跳躍極易被系統標記。</p>
+            <p style="margin: 0 0 8px 0;"><b style="color: #0984e3;">🕒 時區最佳策略 (同日同區)：</b><br>連續打菇最安全的做法是**「保持在同一個日期內」**。頻繁跨日跳躍容易導致票券 Bug 或異常。</p>
+            <p style="margin: 0 0 15px 0;"><b style="color: #2d3436;">✈️ 跨國冷卻底線：</b><br>跨大洲飛行，請務必徹底關閉遊戲靜置 **2 小時以上**。</p>
+            
+            <div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; border-left: 4px solid #ffc107; font-size: 0.95em;">
+                <b style="color: #d35400;">⚠️ 系統測試與免責聲明：</b><br>
+                本工具為地理資訊 API 與時區換算邏輯之概念驗證（PoC）測試版本。所有分析結果僅供理論探討與學術測試參考。使用者需自行評估任何第三方軟體操作之風險，本工具對任何帳號異常或服務條款（ToS）相關問題，概不負連帶責任。
+            </div>
+        </div>
+    </details>
+
     <div class="footer">
-        v2.7.1 | Designed & Developed by <b>Hugo x Zoe AI</b>
+        v2.7.2 | Designed & Developed by <b>Hugo x Zoe AI</b>
     </div>
 </div>
 
